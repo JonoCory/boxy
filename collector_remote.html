@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dataset Collector</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        select { padding: 15px; font-size: 20px; border-radius: 8px; width: 100%; margin-bottom: 20px; background: #333; color: white; border: 2px solid #00ffcc;}
+        button { padding: 20px; font-size: 24px; background: #00ffcc; color: black; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 20px;}
+        button:active { background: #00ccaa; }
+        video { width: 100%; max-width: 400px; border-radius: 12px; transform: scaleX(-1); border: 2px solid #555;}
+        #counter { font-size: 18px; color: #ffcc00; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>📸 Train the AI</h2>
+    
+    <select id="gestureSelect">
+        <option value="NEUTRAL">Neutral (Normal Hand)</option>
+        <option value="JUMP">Jump (Open Palm)</option>
+        <option value="DUCK">Duck (Closed Fist)</option>
+        <option value="PAUSE">Pause (Thumbs Up)</option>
+    </select>
+
+    <button id="recordBtn">📷 CAPTURE GESTURE</button>
+    <div id="counter">Saved this session: 0</div>
+
+    <video id="videoElement" autoplay playsinline></video>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const recordBtn = document.getElementById('recordBtn');
+        const gestureSelect = document.getElementById('gestureSelect');
+        const counterText = document.getElementById('counter');
+        
+        let currentLandmarks = null;
+        let savedCount = 0;
+
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+        hands.onResults((results) => {
+            if (results.multiHandLandmarks.length > 0) {
+                // Store the latest hand shape
+                let coords = [];
+                results.multiHandLandmarks[0].forEach(p => coords.push(p.x, p.y, p.z));
+                currentLandmarks = coords;
+                videoElement.style.borderColor = "#00ffcc"; // Give visual feedback that hand is seen
+            } else {
+                currentLandmarks = null;
+                videoElement.style.borderColor = "red"; // Hand lost
+            }
+        });
+
+        const camera = new Camera(videoElement, { 
+            onFrame: async () => { await hands.send({image: videoElement}); }, 
+            width: 320, height: 240
+        });
+        camera.start();
+
+        // When you tap the button, send the data to the PC!
+        recordBtn.addEventListener('click', () => {
+            if (!currentLandmarks) {
+                alert("Make sure your hand is in the camera view!");
+                return;
+            }
+
+            fetch('/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    label: gestureSelect.value,
+                    landmarks: currentLandmarks
+                })
+            }).then(res => res.json()).then(data => {
+                if(data.status === "ok") {
+                    savedCount++;
+                    counterText.innerText = `Saved this session: ${savedCount}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

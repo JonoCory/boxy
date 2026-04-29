@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Controller</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 10px; }
+        #setup { background: #222; padding: 20px; border-radius: 12px; margin-top: 50px; }
+        input { padding: 10px; font-size: 16px; margin: 10px; border-radius: 6px; border: none; }
+        button { padding: 15px 30px; font-size: 18px; background: #00ffcc; color: black; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        video { width: 100%; max-width: 400px; border-radius: 12px; transform: scaleX(-1); display: none; margin-top: 20px;}
+        #status { color: #ffcc00; font-size: 20px; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="setup">
+        <h2>Join Game</h2>
+        <input type="text" id="pName" placeholder="Enter Name" maxlength="10">
+        <input type="color" id="pColor" value="#00ffcc"><br>
+        <button id="startBtn">ACTIVATE CAMERA</button>
+    </div>
+
+    <div id="status"></div>
+    <video id="videoElement" autoplay playsinline></video>
+
+    <script>
+        const myId = Math.random().toString(36).substr(2, 9);
+        const videoElement = document.getElementById('videoElement');
+        const setupDiv = document.getElementById('setup');
+        const statusText = document.getElementById('status');
+        let isPlaying = false;
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            isPlaying = true;
+            setupDiv.style.display = 'none';
+            videoElement.style.display = 'block';
+            statusText.innerText = "Initializing AI...";
+            camera.start();
+        });
+
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+        hands.onResults((results) => {
+            if (!isPlaying) return;
+
+            let coords = [];
+            let is_hand_visible = results.multiHandLandmarks.length > 0;
+
+            if (is_hand_visible) {
+                statusText.innerText = "🟢 CONNECTED & TRACKING";
+                statusText.style.color = "#00ffcc";
+                results.multiHandLandmarks[0].forEach(p => coords.push(p.x, p.y, p.z));
+            } else {
+                statusText.innerText = "🟡 WAITING FOR HAND";
+                statusText.style.color = "#ffcc00";
+            }
+    
+            fetch('/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    id: myId,
+                    name: document.getElementById('pName').value || "Player",
+                    color: document.getElementById('pColor').value,
+                    landmarks: is_hand_visible ? coords : null, // Send null if no hand
+                    wrist_x: is_hand_visible ? results.multiHandLandmarks[0][0].x : 0.5,
+                    force_neutral: !is_hand_visible // Tell server to drop us to Neutral
+                })
+            }).catch(() => {}); // Ignore dropped packets quietly
+            }
+        );
+
+        const camera = new Camera(videoElement, { 
+            onFrame: async () => { await hands.send({image: videoElement}); }, 
+            width: 320, height: 240 // Lower res = much faster ML processing on phones!
+        });
+
+        if ('wakeLock' in navigator) {
+            let wakeLock = null;
+            const requestWakeLock = async () => {
+                try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+            };
+            requestWakeLock();
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') requestWakeLock();
+            });
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+pygame
+torch
+pandas
+numpy
+scikit-learn
+qrcode
+aiohttp
+werkzeug
+mediapipe
+opencv-python
