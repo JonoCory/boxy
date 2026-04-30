@@ -20,7 +20,12 @@ also this one is important
 python -m pip install cryptography
 ```
 
-![Gameplay Demo](images/boxy gameplay High score sngle player.gif)
+The game gets progessively harder harder 
+faster, more bombs, more boxes to dodge
+
+Here is a play through with the change in stage set to 15 seconds
+
+![Gameplay Demo](images/boxyHighScore.gif)
 
 
 
@@ -29,7 +34,24 @@ python -m pip install cryptography
 
 
 
+THere are currently three different states.
 
+## State 1: Noraml gravity (Always starts with this one)
+
+![normal gravity Demo](images/boxyNormalGravityAndAntiGravity.gif)
+
+
+## State 2: Zero gravity 
+you move up and down with jump and duck
+
+![zero gravity Demo](images/boxyZEROGRAVITY.gif)
+
+
+
+## State 3: Gravity switch
+Swap which way gravity pull s you wiht jump and duck
+
+![gravity switch Demo](images/boxyGravitySwitch.gif)
 
 
 ### This is a quick AI generated markdown to explain the core stuff, itll propabaly outdated soon when i add more things
