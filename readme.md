@@ -54,7 +54,7 @@ Swap which way gravity pull s you wiht jump and duck
 ![menu Demo](images/boxyMenu.gif)
 
 
-
+* It says "LAG" if that players hand is not being tracked
 
 
 ## Connecting warning that i cant get rid of
