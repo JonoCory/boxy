@@ -57,8 +57,9 @@ Swap which way gravity pull s you wiht jump and duck
 
 
 
-## Connecting issue that i cant solve
-You always get this warning And have to proced
+## Connecting warning that i cant get rid of
+You always get this warning And have to click advance>proceed
+
 ![warning](images/warning.jpg)
 
 
@@ -68,8 +69,10 @@ You always get this warning And have to proced
 
 ## choose your name and colour
 the device will say when it can detect a hand
+The background will match the colour you choose.
 
 ![newplayer](images/newplayer.jpg)
+
 
 
 
@@ -97,7 +100,6 @@ python launcher.py
 ```
 
 this will start both
-
 
 
 ### OLD way 1. Start the Server (The "Brain")
