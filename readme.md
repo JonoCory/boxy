@@ -1,3 +1,8 @@
+
+I added a launcher so we just need to run the launcher and it will sart the game and server
+
+
+
 run
 ```
 pip install -r requirements.txt
@@ -29,8 +34,16 @@ The `cryptography` package is required to generate local SSL certificates so pho
 ---
 
 ## 🕹️ How to Play
+### 
+```bash
+python launcher.py
+```
 
-### 1. Start the Server (The "Brain")
+this will start both
+
+
+
+### OLD way 1. Start the Server (The "Brain")
 Open a terminal and run:
 ```bash
 python server.py
@@ -40,11 +53,12 @@ python server.py
 
 ---
 
-### 2. Start the Game Engine (The "Brawn")
+### OLD 2. Start the Game Engine (The "Brawn")
 Open a second, separate terminal and run:
 ```bash
 python game.py
 ```
+
 
 ---
 
@@ -75,6 +89,8 @@ Hold your hand in front of your phone's camera. The game tracks your hand's shap
 | JUMP | ☝️ Index Finger Up | Jump / Fly Up / Fall to the Ceiling |
 | DUCK | ✊ Closed Fist | Duck / Fly Down / Fall to the Floor |
 | PAUSE / READY | 🤙 Surfer / 'Y' | Start the game from the lobby or pause mid-game |
+
+The pause and start have a time so you have to hold that position for a bit
 
 **Movement:**  
 after no mistakes you slowly recover and move back to the center
@@ -107,16 +123,18 @@ If you fall off the screen, you lose a life. You will respawn as a ghost droppin
 
 ---
 
-## ⚠️ Known Issues & Troubleshooting
+## ⚠️ Known Issues & Troubleshooting ( solved)
 
 **Phones randomly disconnecting or getting stuck ducking:**  
 Mobile browsers (especially iOS Safari) aggressively pause JavaScript when the screen dims to save battery.  
 We implemented a WakeLock, but if your phone screen dims, tap it to wake it up.  
 If a gesture gets permanently stuck, quickly refresh the web page on your phone and rejoin.
 
+
+
 ---
 
-**SSL / HTTPS Warning on Phones:**  
+**SSL / HTTPS Warning on Phones:**  ( dont know how to stop this)
 Mobile browsers refuse to open the camera on standard `http://` sites.  
 We generate a temporary ad-hoc `https://` certificate. Your phone flags this as *"Not Secure"* because it isn’t issued by a global authority.  
 You must click: **Advanced → Proceed** to play.
@@ -140,8 +158,4 @@ The text instructions will still be readable.
 ## planned impovments
 There are many improvments i want to make to the actual game play. this is just the base version.
 
-Jumping state.
-lower boxes so you have to duck.
-
-I want it to get progressivly harder.
 
