@@ -185,6 +185,17 @@ If you fall off the screen, you lose a life. You will respawn as a ghost droppin
 
 ## ⚠️ Known Issues & Troubleshooting ( solved)
 
+## connectiong my laptop
+
+The "Public" Network Trap (Windows)
+When you connect a laptop to Wi-Fi, Windows asks if it's a Public or Private network.
+If it is set to Public, Windows completely blocks other devices on the network from seeing your laptop.
+
+The Fix: On your laptop, go to Settings > Network & Internet > Wi-Fi. 
+Click on your current Wi-Fi network's properties. Change the Network Profile type from "Public" to "Private".
+
+
+
 **Phones randomly disconnecting or getting stuck ducking:**  
 Mobile browsers (especially iOS Safari) aggressively pause JavaScript when the screen dims to save battery.  
 We implemented a WakeLock, but if your phone screen dims, tap it to wake it up.  
@@ -201,7 +212,7 @@ You must click: **Advanced → Proceed** to play.
 
 ---
 
-**Empty Square Emojis in Game:**  
+**Empty Square Emojis in Game:**  (solved i think)
 Pygame relies on local Windows fonts to render emojis.  
 If your system is missing the **Segoe UI Emoji** font, emojis will appear as empty squares.  
 The text instructions will still be readable.
@@ -215,7 +226,7 @@ The text instructions will still be readable.
 
 ---
 
-## planned impovments
+## Planned impovments
 There are many improvments i want to make to the actual game play. this is just the base version.
 
 
