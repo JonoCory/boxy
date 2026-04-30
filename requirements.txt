@@ -1,4 +1,4 @@
-pygame
+pygame-ce
 torch
 pandas
 numpy
@@ -6,5 +6,6 @@ scikit-learn
 qrcode
 aiohttp
 werkzeug
+cryptography
 mediapipe
 opencv-python
