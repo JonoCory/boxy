@@ -29,7 +29,7 @@ threading.Thread(target=listen_for_udp, daemon=True).start()
 pygame.init()
 WIDTH, HEIGHT = 1200, 700
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("BOXY - V18")
+pygame.display.set_caption("BOXY - V19")
 clock = pygame.time.Clock()
 
 font = pygame.font.SysFont("impact", 36)
@@ -61,7 +61,7 @@ def load_scores():
 def save_score(name, score):
     scores = load_scores()
     scores.append({"name": name, "score": score, "date": str(date.today())})
-    scores = sorted(scores, key=lambda x: x["score"], reverse=True)[:10] # Keep top 10
+    scores = sorted(scores, key=lambda x: x["score"], reverse=True)[:10] 
     with open("highscores.json", "w") as f: json.dump(scores, f)
     return scores
 
@@ -73,7 +73,7 @@ def get_top_score():
 all_time_top = get_top_score()
 session_top = {"name": "---", "score": 0}
 
-
+# GLOBALS
 SETTINGS = {
     "MODE": ["PARTY", "ENDLESS"], "MODE_IDX": 0,
     "DIFFICULTY": ["EASY", "NORMAL", "HARD"], "DIFFICULTY_IDX": 1,
@@ -83,6 +83,8 @@ SETTINGS = {
 
 stage_names = {1: "NORMAL GRAVITY", 2: "ZERO-G FLIGHT", 3: "GRAVITY SWITCH"}
 champion_pid = None 
+kicked_pids = set() # Ban list to prevent zombie players!
+confirm_clear_timer = 0 # Timer for "Are You Sure?" score clearing
 
 def get_diff_mult():
     mapping = {"EASY": 0.8, "NORMAL": 1.0, "HARD": 1.4}
@@ -275,10 +277,11 @@ def draw_button(surface, rect, color, text_str, text_color):
     text = font.render(text_str, True, text_color)
     surface.blit(text, (rect.centerx - text.get_width()//2, rect.centery - text.get_height()//2))
 
-# Perfectly centered horizontal button layout
-btn_play = pygame.Rect(240, HEIGHT - 120, 220, 60)
-btn_settings = pygame.Rect(490, HEIGHT - 120, 220, 60)
-btn_leaderboard = pygame.Rect(740, HEIGHT - 120, 220, 60)
+# Perfectly centered, elevated horizontal button layout
+button_y = HEIGHT - 180
+btn_play = pygame.Rect(240, button_y, 220, 60)
+btn_settings = pygame.Rect(490, button_y, 220, 60)
+btn_leaderboard = pygame.Rect(740, button_y, 220, 60)
 
 btn_pause = pygame.Rect(WIDTH - 120, 20, 100, 40)
 p_btn_resume = pygame.Rect(WIDTH//2 - 160, HEIGHT//2 - 90, 320, 50)
@@ -300,8 +303,13 @@ while True:
     current_diff = get_diff_mult()
     dynamic_game_speed = (5 + (distance_traveled / 3000)) * current_diff
     
-    for pid, data in shared_player_state.items():
-        if pid not in players: players[pid] = Player(pid, data['name'], data['color'])
+    # Sync players securely avoiding zombie packets
+    for pid, data in list(shared_player_state.items()):
+        if pid not in kicked_pids and pid not in players: 
+            players[pid] = Player(pid, data['name'], data['color'])
+
+    if confirm_clear_timer > 0:
+        confirm_clear_timer -= 1
 
     # ------------------- STATE: PAUSED -------------------
     if is_paused:
@@ -320,8 +328,9 @@ while True:
             y_kick += 45
             
         if pid_to_remove:
+            kicked_pids.add(pid_to_remove)
             del players[pid_to_remove]
-            del shared_player_state[pid_to_remove]
+            if pid_to_remove in shared_player_state: del shared_player_state[pid_to_remove]
 
         if mouse_click:
             if p_btn_resume.collidepoint(pygame.mouse.get_pos()): 
@@ -375,18 +384,30 @@ while True:
             draw_button(screen, btn_kick, RED, "KICK", WHITE)
             if mouse_click and btn_kick.collidepoint(pygame.mouse.get_pos()): pid_to_remove = p.pid
             y_kick += 45
+            
         if pid_to_remove:
+            kicked_pids.add(pid_to_remove)
             del players[pid_to_remove]
-            del shared_player_state[pid_to_remove]
+            if pid_to_remove in shared_player_state: del shared_player_state[pid_to_remove]
 
-        btn_clear_scores = pygame.Rect(WIDTH//2 - 140, HEIGHT - 100, 280, 50)
-        draw_button(screen, btn_clear_scores, RED, "CLEAR HIGH SCORES", WHITE)
+        # Two-stage Clear Score Mechanism
+        if confirm_clear_timer > 0: btn_text, btn_color = "ARE YOU SURE?", ORANGE
+        else: btn_text, btn_color = "CLEAR HIGH SCORES", RED
+        
+        btn_clear_scores = pygame.Rect(WIDTH//2 - 150, HEIGHT - 100, 300, 50)
+        draw_button(screen, btn_clear_scores, btn_color, btn_text, WHITE)
 
         if mouse_click:
-            if btn_back.collidepoint(pygame.mouse.get_pos()): game_state = "LOBBY"
+            if btn_back.collidepoint(pygame.mouse.get_pos()): 
+                game_state = "LOBBY"
+                confirm_clear_timer = 0
             elif btn_clear_scores.collidepoint(pygame.mouse.get_pos()): 
-                with open("highscores.json", "w") as f: json.dump([], f)
-                all_time_top = {"name": "---", "score": 0}
+                if confirm_clear_timer > 0:
+                    with open("highscores.json", "w") as f: json.dump([], f)
+                    all_time_top = {"name": "---", "score": 0}
+                    confirm_clear_timer = 0
+                else:
+                    confirm_clear_timer = 180 # Require second click within 3 seconds
 
     # ------------------- STATE: LEADERBOARD -------------------
     elif game_state == "LEADERBOARD":
@@ -401,10 +422,9 @@ while True:
             screen.blit(font.render("NO SCORES RECORDED YET.", True, GREY), (WIDTH//2 - 180, y_offset))
         else:
             for i, s in enumerate(scores):
-                # Apply Gold, Silver, Bronze coloring
                 if i == 0: color, rank_str = YELLOW, "1ST"
-                elif i == 1: color, rank_str = (200, 200, 200), "2ND"  # Silver
-                elif i == 2: color, rank_str = (205, 127, 50), "3RD"   # Bronze
+                elif i == 1: color, rank_str = (200, 200, 200), "2ND"  
+                elif i == 2: color, rank_str = (205, 127, 50), "3RD"   
                 else: color, rank_str = WHITE, f"{i+1}TH"
 
                 row_text = f"{rank_str.ljust(5)}  {s['name'].ljust(12)}  {s['score']}m"
@@ -425,24 +445,25 @@ while True:
         screen.blit(small_font.render("🔥 SESSION TOP 🔥", True, ORANGE), (20, 110))
         screen.blit(font.render(f"{session_top['name']}: {session_top['score']}m", True, WHITE), (20, 140))
 
+        # Reorganized Layout: Left side for QR, Right Side for Instructions
         if not qr_img and frame_count % 60 == 0: qr_img = load_qr()
         if qr_img:
-            screen.blit(qr_img, (50, 200))
-            screen.blit(small_font.render("SCAN TO JOIN", True, WHITE), (90, 410))
-        else: screen.blit(small_font.render("WAITING FOR SERVER...", True, GREY), (50, 150))
+            screen.blit(qr_img, (150, 180))
+            screen.blit(small_font.render("SCAN TO JOIN", True, WHITE), (190, 390))
+        else: screen.blit(small_font.render("WAITING FOR SERVER...", True, GREY), (150, 200))
         
-        inst_x, inst_y = WIDTH//2 - 180, 180
-        screen.blit(emoji_font.render("☝️ JUMP", True, WHITE), (inst_x, inst_y))
-        screen.blit(emoji_font.render("✊ DUCK", True, WHITE), (inst_x, inst_y + 50))
+        inst_x, inst_y = WIDTH - 450, 180
+        screen.blit(emoji_font.render("☝️ JUMP/UP", True, WHITE), (inst_x, inst_y))
+        screen.blit(emoji_font.render("✊ DUCK/DOWN", True, WHITE), (inst_x, inst_y + 50))
         screen.blit(emoji_font.render("🖐️ NEUTRAL", True, WHITE), (inst_x, inst_y + 100))
-        screen.blit(emoji_font.render("🤙 HOLD TO START", True, GREEN), (inst_x, inst_y + 150))
+        screen.blit(emoji_font.render("🤙 HOLD TO START/PAUSE", True, GREEN), (inst_x, inst_y + 150))
         
-        bomb_warn_rect = pygame.Rect(WIDTH//2 - 150, HEIGHT - 240, 300, 60)
+        bomb_warn_rect = pygame.Rect(WIDTH - 500, 390, 350, 60)
         pygame.draw.rect(screen, (30, 30, 30), bomb_warn_rect, border_radius=10)
-        sample_bomb = pygame.Rect(WIDTH//2 - 130, HEIGHT - 225, 30, 30)
+        sample_bomb = pygame.Rect(WIDTH - 480, 405, 30, 30)
         pygame.draw.rect(screen, ORANGE, sample_bomb, border_radius=15)
         pygame.draw.rect(screen, YELLOW, sample_bomb, 3, border_radius=15)
-        screen.blit(font.render("AVOID THESE!", True, ORANGE), (WIDTH//2 - 80, HEIGHT - 230))
+        screen.blit(font.render("AVOID THE BOMBS!", True, ORANGE), (WIDTH - 435, 400))
         
         draw_button(screen, btn_play, GREEN, "START GAME", BLACK)
         draw_button(screen, btn_settings, BLUE, "SETTINGS", WHITE)
