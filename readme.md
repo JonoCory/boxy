@@ -8,17 +8,12 @@ run
 pip install -r requirements.txt
 ```
 
-or
+then 
+```
+python launcher.py
+```
 
-```
-pip install pygame torch pandas numpy scikit-learn qrcode aiohttp werkzeug mediapipe opencv-python
-```
 
-also this one is important
-
-```
-python -m pip install cryptography
-```
 
 The game gets progessively harder harder 
 faster, more bombs, more boxes to dodge
