@@ -54,6 +54,35 @@ Swap which way gravity pull s you wiht jump and duck
 ![gravity switch Demo](images/boxyGravitySwitch.gif)
 
 
+## Menu
+
+![menu Demo](images/boxyMenu.gif)
+
+
+
+
+
+## Connecting issue that i cant solve
+You always get this warning And have to proced
+![warning](images/warning.jpg)
+
+
+
+
+
+
+## choose your name and colour
+the device will say when it can detect a hand
+
+![newplayer](images/newplayer.jpg)
+
+
+
+
+
+
+
+
 ### This is a quick AI generated markdown to explain the core stuff, itll propabaly outdated soon when i add more things
 
 ## 📌 Notes
@@ -108,7 +137,7 @@ Because we are hosting locally, your phone will warn you about an unsafe certifi
 - Pick a color  
 - Hit **START**
 
-You will drop right into the game lobby!
+You will drop right into the game lobby
 
 ---
 
@@ -137,6 +166,7 @@ If your cube collides with another player, you will push each other. Sabotage yo
 
 **Ghost Respawn:**  
 If you fall off the screen, you lose a life. You will respawn as a ghost dropping from the ceiling after 3 seconds.
+
 
 ### Stages
 
