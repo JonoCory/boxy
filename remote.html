@@ -2,41 +2,87 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Controller</title>
+    <title>BOXY Controller</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 10px; }
-        #setup { background: #222; padding: 20px; border-radius: 12px; margin-top: 50px; }
-        input { padding: 10px; font-size: 16px; margin: 10px; border-radius: 6px; border: none; }
-        button { padding: 15px 30px; font-size: 18px; background: #00ffcc; color: black; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
-        video { width: 100%; max-width: 400px; border-radius: 12px; transform: scaleX(-1); display: none; margin-top: 20px;}
-        #status { color: #ffcc00; font-size: 20px; margin-top: 20px; font-weight: bold; }
+        body { 
+            background: #121212; 
+            color: white; 
+            font-family: 'Impact', sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 0;
+            transition: background-color 0.5s ease;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7); 
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { font-size: 4rem; margin: 10px 0; letter-spacing: 4px; color: #ffffff; text-shadow: 2px 2px 0px #555; }
+        #setup { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 16px; margin-top: 10px; border: 1px solid #333; }
+        
+        /* Live Color Preview Box */
+        #previewBox {
+            width: 120px;
+            height: 120px;
+            margin: 15px auto;
+            border-radius: 16px;
+            border: 4px solid white;
+            background-color: #00ffcc; /* Default */
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
+            transition: background-color 0.1s;
+        }
+
+        input[type="text"] { padding: 12px; font-size: 18px; margin: 10px; border-radius: 8px; border: none; font-weight: bold; text-align: center;}
+        input[type="color"] { width: 60px; height: 60px; border: none; background: none; cursor: pointer; }
+        button { padding: 15px 40px; margin-top: 20px; font-size: 20px; background: white; color: black; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
+        video { width: 100%; max-width: 350px; border-radius: 16px; transform: scaleX(-1); display: none; margin-top: 20px; border: 4px solid white;}
+        #status { font-size: 22px; margin-top: 20px; font-weight: bold; font-family: sans-serif; letter-spacing: 1px;}
     </style>
 </head>
 <body>
-    <div id="setup">
-        <h2>Join Game</h2>
-        <input type="text" id="pName" placeholder="Enter Name" maxlength="10">
-        <input type="color" id="pColor" value="#00ffcc"><br>
-        <button id="startBtn">ACTIVATE CAMERA</button>
-    </div>
+    <div class="container">
+        <h1>BOXY</h1>
 
-    <div id="status"></div>
-    <video id="videoElement" autoplay playsinline></video>
+        <div id="setup">
+            <div id="previewBox"></div>
+            <input type="text" id="pName" placeholder="PLAYER NAME" maxlength="8"><br>
+            <label style="font-family: sans-serif; font-size: 14px; color: #ccc;">PICK YOUR COLOR</label><br>
+            <input type="color" id="pColor" value="#00ffcc"><br>
+            <button id="startBtn">JOIN GAME</button>
+        </div>
+
+        <div id="status"></div>
+        <video id="videoElement" autoplay playsinline></video>
+    </div>
 
     <script>
         const myId = Math.random().toString(36).substr(2, 9);
         const videoElement = document.getElementById('videoElement');
         const setupDiv = document.getElementById('setup');
         const statusText = document.getElementById('status');
+        const colorInput = document.getElementById('pColor');
+        const previewBox = document.getElementById('previewBox');
         let isPlaying = false;
+        let lastNetworkSend = 0; 
+
+        // Live preview update
+        colorInput.addEventListener('input', (e) => {
+            previewBox.style.backgroundColor = e.target.value;
+        });
 
         document.getElementById('startBtn').addEventListener('click', () => {
             isPlaying = true;
+            document.body.style.backgroundColor = colorInput.value;
             setupDiv.style.display = 'none';
             videoElement.style.display = 'block';
-            statusText.innerText = "Initializing AI...";
+            statusText.innerText = "LOADING CAMERA...";
             camera.start();
         });
 
@@ -50,45 +96,43 @@
             let is_hand_visible = results.multiHandLandmarks.length > 0;
 
             if (is_hand_visible) {
-                statusText.innerText = "🟢 CONNECTED & TRACKING";
-                statusText.style.color = "#00ffcc";
+                statusText.innerText = "TRACKING ACTIVE";
+                statusText.style.color = "#ffffff";
                 results.multiHandLandmarks[0].forEach(p => coords.push(p.x, p.y, p.z));
             } else {
-                statusText.innerText = "🟡 WAITING FOR HAND";
+                statusText.innerText = "WAITING FOR HAND";
                 statusText.style.color = "#ffcc00";
             }
     
-            fetch('/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    id: myId,
-                    name: document.getElementById('pName').value || "Player",
-                    color: document.getElementById('pColor').value,
-                    landmarks: is_hand_visible ? coords : null, // Send null if no hand
-                    wrist_x: is_hand_visible ? results.multiHandLandmarks[0][0].x : 0.5,
-                    force_neutral: !is_hand_visible // Tell server to drop us to Neutral
-                })
-            }).catch(() => {}); // Ignore dropped packets quietly
+            // Throttle to 20 FPS to prevent lag
+            const now = Date.now();
+            if (now - lastNetworkSend > 50) {
+                lastNetworkSend = now;
+                fetch('/update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        id: myId,
+                        name: document.getElementById('pName').value || "Player",
+                        color: colorInput.value,
+                        landmarks: is_hand_visible ? coords : null,
+                        wrist_x: is_hand_visible ? results.multiHandLandmarks[0][0].x : 0.5
+                    })
+                }).catch(() => {}); 
             }
-        );
+        });
 
         const camera = new Camera(videoElement, { 
             onFrame: async () => { await hands.send({image: videoElement}); }, 
-            width: 320, height: 240 // Lower res = much faster ML processing on phones!
+            width: 320, height: 240 
         });
 
         if ('wakeLock' in navigator) {
             let wakeLock = null;
-            const requestWakeLock = async () => {
-                try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
-            };
+            const requestWakeLock = async () => { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} };
             requestWakeLock();
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') requestWakeLock();
-            });
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWakeLock(); });
         }
-
     </script>
 </body>
 </html>
