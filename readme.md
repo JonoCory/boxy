@@ -20,6 +20,17 @@ also this one is important
 python -m pip install cryptography
 ```
 
+![Gameplay Demo](images/boxy gameplay High score sngle player.gif)
+
+
+
+
+
+
+
+
+
+
 
 ### This is a quick AI generated markdown to explain the core stuff, itll propabaly outdated soon when i add more things
 
