@@ -81,7 +81,7 @@ The background will match the colour you choose.
 
 
 
-### This is a quick AI generated markdown to explain the core stuff, itll propabaly outdated soon when i add more things
+### Fome here below is is a quick AI generated markdown to explain the core stuff, itll propabaly outdated soon when i add more things
 
 ## 📌 Notes
 
@@ -225,6 +225,64 @@ The text instructions will still be readable.
 - Ensure your phone is on the same Wi-Fi (not cellular data)
 
 ---
+# 🧠 BOXY: Machine Learning Architecture & Technical Stack
+
+BOXY utilizes an **Edge Computing** architecture to achieve near-zero latency for motion controls. Rather than sending a heavy video feed from the phone to the computer, the system splits the computational load: the phone handles the computer vision, and the PC handles the neural network inference and physics engine.
+
+Here is a complete breakdown of the machine learning pipeline and the libraries that power it.
+
+---
+
+## 1. The Eyes: `MediaPipe` (JavaScript / HTML)
+Instead of processing raw video on the server, the computer vision runs directly on the player's mobile browser using Google's **MediaPipe Hands**.
+
+* **What it does:** MediaPipe is a highly optimized, pre-trained ML model that detects human hands in real-time. When it identifies a hand, it maps a digital "skeleton" consisting of **21 specific 3D landmarks** (knuckles, fingertips, wrist, etc.).
+* **The Data Flow:** For every frame, MediaPipe calculates the exact X, Y, and Z coordinates of those 21 points. It packages these 63 raw numbers into a lightweight JSON payload and transmits them over the local Wi-Fi.
+* **The Edge Advantage:** Because the phone only sends tiny arrays of text data (rather than streaming 30FPS video), network latency is drastically minimized, and the PC's CPU is freed up to run the game engine.
+
+## 2. The Brain: `PyTorch` (Python)
+Once the Python server receives the 63 coordinates, it feeds them into a custom AI trained using **PyTorch**, Meta's premier machine learning framework.
+
+* **The Model Architecture:** The system uses a **Feedforward Neural Network** (specifically a Multilayer Perceptron). 
+* **How it calculates gestures:**
+  * **Input Layer:** Accepts the 63 numeric coordinates from the phone.
+  * **Hidden Layers:** Passes the data through two dense layers (128 neurons, then 64 neurons). These layers use a `ReLU` activation function to detect geometric patterns (e.g., "If the Y-coordinate of the index finger is significantly higher than the wrist, the user is pointing up").
+  * **Dropout (`nn.Dropout`):** During training, 20% of the neurons are randomly deactivated. This prevents the AI from simply memorizing specific hands and forces it to generalize the underlying *concept* of the gestures.
+  * **Output Layer:** Outputs probability scores for the target classes (`JUMP`, `DUCK`, `PAUSE`, `NEUTRAL`).
+
+## 3. The Translator: `Scikit-Learn` (Python)
+Neural networks only understand raw numbers. The PyTorch model does not inherently know the word "JUMP"; it only predicts a class ID like `1` or `2`. 
+
+* **What it does:** The project uses the `LabelEncoder` tool from **Scikit-Learn**. During the data collection phase, this tool looked at the training folder names and mapped them to integers.
+* **Inference Phase:** When the server boots up, it loads a pickled version of this dictionary (`label_encoder.pkl`). When PyTorch predicts class `1`, the Label Encoder instantly translates it back to the human-readable string `"JUMP"`.
+
+## 4. The Data Handlers: `NumPy` & `Pandas` (Python)
+While these run behind the scenes, they are the workhorses of the training pipeline.
+* **Pandas** was used to structure and organize thousands of frames of recorded hand coordinates into clean CSV datasets.
+* **NumPy** converts those datasets into the high-speed mathematical matrices (Tensors) that PyTorch requires to train the neural network.
+
+---
+
+## 🛠️ The Core Infrastructure Stack
+
+Beyond the Machine Learning, BOXY relies on a robust local server and engine stack:
+
+* **`pygame-ce` (Pygame Community Edition):** The engine rendering the game. The Community Edition is used over standard Pygame for its significantly faster rendering pipelines, allowing for smooth 60FPS platforming and complex 2D collision resolution.
+* **`aiohttp`, `werkzeug`, & `cryptography`:** These libraries generate a secure, temporary local HTTPS server. Mobile browsers (like iOS Safari and Android Chrome) strictly block access to the device's camera on standard HTTP connections. This stack generates on-the-fly SSL certificates to bypass this restriction locally.
+* **`socket` (UDP):** The project uses User Datagram Protocol (UDP) for inter-process communication. Once the web server calculates the AI gesture, it blasts a UDP packet locally to the Pygame engine. UDP is connectionless and does not wait for acknowledgments, making it the perfect protocol for real-time game inputs where dropping an old frame is better than delaying a new one.
+
+---
+
+## 🔄 The Complete Data Pipeline Summary
+1. **Phone Camera** captures a frame.
+2. **MediaPipe (JS)** extracts 63 spatial coordinates.
+3. **Wi-Fi** transmits the coordinates to the Python web server (throttled to 20Hz to prevent buffer bloat).
+4. **PyTorch (Python)** processes the coordinates and predicts an integer ID.
+5. **Scikit-Learn (Python)** translates the ID into a string action (e.g., `"DUCK"`).
+6. **UDP Socket** instantly blasts the command to the Pygame client.
+7. **Pygame-CE** executes the physics and updates the screen.
+
+
 
 ## Planned impovments
 There are many improvments i want to make to the actual game play. this is just the base version.
