@@ -2,7 +2,7 @@ import subprocess
 import sys
 import time
 
-print("Starting AI Cube Runner Chaos Edition...")
+print("Starting BOXY...")
 
 # Start the server in the background
 server_process = subprocess.Popen([sys.executable, "server.py"])
