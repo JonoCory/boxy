@@ -13,6 +13,8 @@ then
 python launcher.py
 ```
 
+![team](images/4playerLobby.png)
+
 
 
 The game gets progessively harder harder 
@@ -76,10 +78,10 @@ The background will match the colour you choose.
 
 
 
+## 4 Players
 
 
-
-
+![4 players](images/fourPlayer.gif)
 
 ### Fome here below is is a quick AI generated markdown to explain the core stuff, itll propabaly outdated soon when i add more things
 
