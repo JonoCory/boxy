@@ -120,6 +120,7 @@ We built a custom web-based tracking tool to record our hands.
 * **`data_collector.py` & `collector_remote.html`**: These scripts hosted a dedicated recording interface on our phones. As we performed various gestures, MediaPipe extracted the 3D coordinates of 21 hand landmarks (63 data points per frame).
 * **`gesture_dataset.csv`**: The output of the collector. We recorded thousands of frames of the JUMP, DUCK, PAUSE, and NEUTRAL gestures, saving the raw mathematical coordinates into a structured dataset.
 
+![capture](images/captureLabels.jpg)
 
 ### 2. The Machine Learning Pipeline
 Once we had the data, we used PyTorch to build the brain.
@@ -135,7 +136,6 @@ BOXY utilizes an Edge Computing architecture to achieve near-zero latency for mo
 The model was trained over 150 epochs using the Adam optimizer and Cross-Entropy Loss. As demonstrated by the terminal output below, the model successfully converged, reducing validation loss and achieving high accuracy across all gesture classes.
 
 ```text
-D:\Machine Learning ii\boxy>C:\Python314\python.exe "d:/Machine Learning ii/boxy/train.py"
 Epoch 030 | Train Loss: 1.2704 | Val Loss: 1.2955 | Val Acc: 45.45%
 Epoch 060 | Train Loss: 0.8859 | Val Loss: 1.0789 | Val Acc: 59.09%
 Epoch 090 | Train Loss: 0.4870 | Val Loss: 0.6918 | Val Acc: 72.73%
@@ -156,9 +156,6 @@ Model and Encoder saved successfully.
     accuracy                           0.91        22
    macro avg       0.91      0.92      0.91        22
 weighted avg       0.92      0.91      0.91        22
-
-
-
 ```
 
 #### Model Performance & Analysis
