@@ -7,7 +7,7 @@ By combining an **Edge Computing** architecture, **MediaPipe** hand tracking, **
 
 ![team](images/4playerLobby.png)
 
-## 📑 Table of Contents
+## Table of Contents
 1. [Gameplay & Features](#️gameplay--features)
 2. [Installation & Quick Start](#installation--quick-start)
 3. [Data Collection & Training](#data-collection--training)
@@ -228,8 +228,5 @@ This repository represents the base version of BOXY. Future planned updates coul
 7. **Pygame-CE** executes the physics and updates the screen.
 
 
-
-## Planned impovments
-There are many improvments i want to make to the actual game play. this is just the base version.
 
 
