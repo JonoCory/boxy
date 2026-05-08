@@ -1,11 +1,12 @@
 
 # BOXY: Gesture-Controlled Multiplayer Arcade
-![team](images/4playerLobby.png)
+
 
 **BOXY** is a real-time, local-multiplayer arcade game where up to 4 players control their Box entirely through computer vision and hand gestures.
 
-
 By combining an **Edge Computing** architecture, **MediaPipe** hand tracking, **PyTorch** neural networks, and a custom **Pygame-CE** physics engine, BOXY delivers a seamless, near-zero-latency motion control experience directly through mobile web browsers—no apps or external controllers required.
+
+![team](images/4playerLobby.png)
 
 ## 📑 Table of Contents
 1. [Gameplay & Features](#️gameplay--features)
@@ -69,6 +70,7 @@ Multiplayer & PvP
   
 ![newplayer](images/newplayer.jpg)
 
+### Menu
 
 ![menu Demo](images/boxyMenu.gif)
 
@@ -167,16 +169,16 @@ weighted avg       0.92      0.91      0.91        22
 * **Engine-Level Smoothing:** While there is minor overlap between **DUCK** and **PAUSE** (PAUSE precision is 0.80), this is intentionally mitigated by the game engine. Because `PAUSE` must be held for 1.5 consecutive seconds to trigger, momentary single-frame misclassifications by the AI are completely filtered out by the game logic.
 * **Conclusion:** The model demonstrates excellent generalization across varied inputs and is highly capable of driving fast-paced, real-time multiplayer gameplay.
 
-### 1. The Eyes: MediaPipe (JavaScript / HTML)
-The computer vision runs directly on the player's mobile browser using Google's MediaPipe Hands. For every frame, MediaPipe calculates the X, Y, and Z coordinates of 21 points. It packages these 63 raw numbers into a lightweight JSON payload and transmits them over Wi-Fi.
+### 1. MediaPipe (JavaScript / HTML)
+This acts as the eyes of the project. The computer vision runs directly on the player's mobile browser using Google's MediaPipe Hands. For every frame, MediaPipe calculates the X, Y, and Z coordinates of 21 points. It packages these 63 raw numbers into a lightweight JSON payload and transmits them over Wi-Fi.
 
 * **The Edge Advantage:** Transmitting text data instead of 30FPS video drastically minimizes latency and frees up the PC's CPU to run the game engine.
 
-### 2. The Brain: PyTorch & Scikit-Learn (Python)
-The `server.py` application receives the coordinates and feeds them into the custom PyTorch neural network. The output layer generates probability scores for the target classes, and the pickled Scikit-Learn LabelEncoder translates the winning ID into a game action.
+### 2. PyTorch & Scikit-Learn (Python)
+This is the brain of the project. The `server.py` application receives the coordinates and feeds them into the custom PyTorch neural network. The output layer generates probability scores for the target classes, and the pickled Scikit-Learn LabelEncoder translates the winning ID into a game action.
 
-### 3. The Brawn: Pygame-CE & UDP Sockets
-The server instantly blasts the predicted gesture to the Pygame engine using UDP Sockets. UDP is connectionless, making it the perfect protocol for real-time inputs where dropping an old frame is better than delaying a new one. The Pygame-CE engine receives this intent and executes the custom axis-separated physics, PvP collisions, and rendering.
+### 3.  Pygame-CE & UDP Sockets
+This is the engine and runs the actula game. The server instantly blasts the predicted gesture to the Pygame engine using UDP Sockets. UDP is connectionless, making it the perfect protocol for real-time inputs where dropping an old frame is better than delaying a new one. The Pygame-CE engine receives this intent and executes the custom axis-separated physics, PvP collisions, and rendering.
 
 
 ## Troubleshooting & Known Issues
@@ -209,7 +211,8 @@ This repository represents the base version of BOXY. Future planned updates coul
 * Cloud-based global leaderboards.
 * Mobile App insteead of browser use to make connectiong faster.
 
-
+#### Playthrough Demo single player
+![Gameplay Demo](images/boxyHighScore.gif)
 
 
 
@@ -222,7 +225,7 @@ faster, more bombs, more boxes to dodge
 
 Here is a play through with the change in stage set to 15 seconds
 
-![Gameplay Demo](images/boxyHighScore.gif)
+
 
 
 
