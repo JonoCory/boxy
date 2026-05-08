@@ -1,6 +1,5 @@
 
-# BOXY: Gesture-Controlled Multiplayer Arcade
-
+# BOXY: Gesture-Controlled Multiplayer Arcade Game
 
 **BOXY** is a real-time, local-multiplayer arcade game where up to 4 players control their Box entirely through computer vision and hand gestures.
 
@@ -85,7 +84,7 @@ Multiplayer & PvP
 
 ### Prerequisites
 * Python 3.9+
-* A PC to run the game engine (The "Brain" and the "Brawn").
+* A PC to run the game engine.
 * A smartphone connected to the **same Wi-Fi network** as the PC.
 
 ### 1. Install Dependencies
@@ -181,7 +180,7 @@ This acts as the eyes of the project. The computer vision runs directly on the p
 ### 2. PyTorch & Scikit-Learn (Python)
 This is the brain of the project. The `server.py` application receives the coordinates and feeds them into the custom PyTorch neural network. The output layer generates probability scores for the target classes, and the pickled Scikit-Learn LabelEncoder translates the winning ID into a game action.
 
-### 3.  Pygame-CE & UDP Sockets
+### 3. Pygame-CE & UDP Sockets
 This is the engine and runs the actula game. The server instantly blasts the predicted gesture to the Pygame engine using UDP Sockets. UDP is connectionless, making it the perfect protocol for real-time inputs where dropping an old frame is better than delaying a new one. The Pygame-CE engine receives this intent and executes the custom axis-separated physics, PvP collisions, and rendering.
 
 
@@ -200,7 +199,7 @@ Mobile browsers strictly refuse to open the camera on standard http:// sites. We
 * **The Fix:** This is required and completely safe. Click **Advanced → Proceed to [IP Address]**.
 
 ### 3. "LAG" Appears Over Player Avatar
-Mobile browsers (especially iOS Safari) aggressively pause background tasks to save battery. To combat this, the mobile UI uses a WakeLock API and throttles network requests to 20Hz. If the "LAG" warning appears, it means the Pygame server hasn't received a packet from the phone in over 1 second. Ensure your phone screen hasn't dimmed.
+Mobile browsers (especially iOS Safari) aggressively pause background tasks to save battery. To combat this, the mobile UI uses a WakeLock API and throttles network requests to 20Hz. If the "LAG" warning appears, it means the Pygame server hasn't received a packet from the phone in over 1 second. Ensure your phone screen hasn't dimmed and there is a hand in frame
 
 
 ### 4. Empty Square Characters in Lobby
@@ -213,7 +212,7 @@ This repository represents the base version of BOXY. Future planned updates coul
 * Power-ups (Shields, Point Multipliers).
 * Improved iOS Safari background execution handling.
 * Cloud-based global leaderboards.
-* Mobile App insteead of browser use to make connectiong faster.
+* Mobile App insteead of browser use to make connecting faster and more reliable.
 
 #### Playthrough Demo single player
 ![Gameplay Demo](images/boxyHighScore.gif)
