@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report # <-- NEW IMPORT
 import pickle
 
 # 1. Load Data
@@ -17,7 +18,7 @@ with open('label_encoder.pkl', 'wb') as f:
     pickle.dump(encoder, f)
 
 # 2. Split Data (Train vs Validation)
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 X_train, X_val = torch.FloatTensor(X_train), torch.FloatTensor(X_val)
 y_train, y_val = torch.LongTensor(y_train), torch.LongTensor(y_val)
@@ -26,7 +27,7 @@ y_train, y_val = torch.LongTensor(y_train), torch.LongTensor(y_val)
 class GestureBrain(nn.Module):
     def __init__(self, num_classes):
         super(GestureBrain, self).__init__()
-        # Added Dropout to prevent overfitting (Good for your report!)
+        # Added Dropout to prevent overfitting
         self.net = nn.Sequential(
             nn.Linear(63, 128),
             nn.ReLU(),
@@ -65,3 +66,23 @@ for epoch in range(epochs):
 
 torch.save(model.state_dict(), 'gesture_model.pth')
 print("Model and Encoder saved successfully.")
+
+
+# 5. FINAL CLASSIFICATION REPORT 
+
+print("\n" + "="*40)
+print("--- Final Classification Report ---")
+print("="*40)
+
+model.eval()
+with torch.no_grad():
+    # Run the validation data through the model one last time
+    final_outputs = model(X_val)
+    _, final_predicted = torch.max(final_outputs.data, 1)
+    
+    # Convert PyTorch tensors back to standard numpy arrays for Scikit-Learn
+    y_true = y_val.numpy()
+    y_pred = final_predicted.numpy()
+    
+    # Print the report using the actual string names (JUMP, DUCK, etc.)
+    print(classification_report(y_true, y_pred, labels=range(len(encoder.classes_)), target_names=encoder.classes_, zero_division=0))
