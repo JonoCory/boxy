@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import classification_report # <-- NEW IMPORT
+from sklearn.metrics import classification_report 
 import pickle
 
 # 1. Load Data
@@ -27,7 +27,7 @@ y_train, y_val = torch.LongTensor(y_train), torch.LongTensor(y_val)
 class GestureBrain(nn.Module):
     def __init__(self, num_classes):
         super(GestureBrain, self).__init__()
-        # Added Dropout to prevent overfitting
+        
         self.net = nn.Sequential(
             nn.Linear(63, 128),
             nn.ReLU(),
@@ -54,7 +54,7 @@ for epoch in range(epochs):
     loss.backward()
     optimizer.step()
     
-    # Validation step
+    
     if (epoch+1) % 30 == 0:
         model.eval()
         with torch.no_grad():
@@ -76,13 +76,12 @@ print("="*40)
 
 model.eval()
 with torch.no_grad():
-    # Run the validation data through the model one last time
+    
     final_outputs = model(X_val)
     _, final_predicted = torch.max(final_outputs.data, 1)
     
-    # Convert PyTorch tensors back to standard numpy arrays for Scikit-Learn
     y_true = y_val.numpy()
     y_pred = final_predicted.numpy()
     
-    # Print the report using the actual string names (JUMP, DUCK, etc.)
+    
     print(classification_report(y_true, y_pred, labels=range(len(encoder.classes_)), target_names=encoder.classes_, zero_division=0))
