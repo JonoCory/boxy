@@ -228,5 +228,14 @@ This repository represents the base version of BOXY. Future planned updates coul
 7. **Pygame-CE** executes the physics and updates the screen.
 
 
+The link to this repo: https://github.com/JonoCory/boxy
 
+The contributors: 
+Game/project plan - together
+Data collection - Sári, Jono
+Gesture recognition modell - Jono
+Environment set up and real time integration - Jono, Nurgul
+Error analysis - Luca, Jono
+Documentation - Sári, Luca, Nurgul 
+Presentation - Luca, Sári
 
